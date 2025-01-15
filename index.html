@@ -33,13 +33,26 @@
       border-radius: 5px;
       display: none;
     }
+    .message-container {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      border-radius: 5px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h1>Welcome to My PWA</h1>
   <p>This is a demo for a Progressive Web App.</p>
   <button class="install-btn">Install</button>
-  
+
+  <div class="message-container" id="message-container">
+    <strong>Note:</strong> The app can only be installed when the browser allows it. Please try again later.
+  </div>
+
   <div class="error-container" id="error-container">
     <strong>Error Details:</strong>
     <ul id="error-list"></ul>
@@ -48,12 +61,18 @@
   <script>
     const errorContainer = document.getElementById('error-container');
     const errorList = document.getElementById('error-list');
+    const messageContainer = document.getElementById('message-container');
 
     function showError(message) {
       const listItem = document.createElement('li');
       listItem.textContent = message;
       errorList.appendChild(listItem);
       errorContainer.style.display = 'block';
+    }
+
+    function showMessage(message) {
+      messageContainer.textContent = message;
+      messageContainer.style.display = 'block';
     }
 
     // Handle JavaScript errors
@@ -87,12 +106,17 @@
       installBtn.style.display = 'block';
 
       installBtn.addEventListener('click', () => {
+        if (!deferredPrompt) {
+          showMessage('The app can only be installed when the browser allows it. Please try again later.');
+          return;
+        }
+
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
             console.log('App Installed');
           } else {
-            showError('App Installation Declined');
+            showMessage('App Installation Declined');
           }
           deferredPrompt = null;
         }).catch((err) => showError(`Install Prompt Error: ${err}`));
