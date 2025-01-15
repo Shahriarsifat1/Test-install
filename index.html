@@ -24,22 +24,62 @@
     .install-btn:hover {
       background-color: #45a049;
     }
+    .error-container {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 5px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h1>Welcome to My PWA</h1>
   <p>This is a demo for a Progressive Web App.</p>
   <button class="install-btn">Install</button>
+  
+  <div class="error-container" id="error-container">
+    <strong>Error Details:</strong>
+    <ul id="error-list"></ul>
+  </div>
 
   <script>
+    const errorContainer = document.getElementById('error-container');
+    const errorList = document.getElementById('error-list');
+
+    function showError(message) {
+      const listItem = document.createElement('li');
+      listItem.textContent = message;
+      errorList.appendChild(listItem);
+      errorContainer.style.display = 'block';
+    }
+
+    // Handle JavaScript errors
+    window.onerror = function (message, source, lineno, colno, error) {
+      const errorMessage = `Error: ${message} at ${source}:${lineno}:${colno}`;
+      showError(errorMessage);
+      console.error(errorMessage);
+    };
+
+    // Handle Promise rejections
+    window.addEventListener('unhandledrejection', function (event) {
+      const errorMessage = `Unhandled Promise Rejection: ${event.reason}`;
+      showError(errorMessage);
+      console.error(errorMessage);
+    });
+
+    // Service Worker registration
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log('Service Worker Registered'))
-        .catch((error) => console.log('Service Worker Registration Failed:', error));
+        .catch((error) => showError(`Service Worker Registration Failed: ${error}`));
     }
 
     let deferredPrompt;
 
+    // Install button logic
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -52,10 +92,10 @@
           if (choiceResult.outcome === 'accepted') {
             console.log('App Installed');
           } else {
-            console.log('App Installation Declined');
+            showError('App Installation Declined');
           }
           deferredPrompt = null;
-        });
+        }).catch((err) => showError(`Install Prompt Error: ${err}`));
       });
     });
   </script>
