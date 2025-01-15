@@ -12,7 +12,6 @@
       padding: 20px;
     }
     .install-btn {
-      display: none;
       padding: 10px 20px;
       background-color: #4CAF50;
       color: white;
@@ -100,30 +99,31 @@
     let deferredPrompt;
 
     // Install button logic
+    installBtn.addEventListener('click', () => {
+      if (!deferredPrompt) {
+        showMessage('The app can only be installed when the browser allows it.');
+        return;
+      }
+
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('App Installed');
+        } else {
+          showMessage('App Installation Declined');
+        }
+        deferredPrompt = null;
+      }).catch((err) => {
+        showError(`Install Prompt Error: ${err}`);
+        console.error(`Install Prompt Error: ${err}`);
+      });
+    });
+
+    // Listen for beforeinstallprompt event
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       installBtn.style.display = 'block';
-
-      installBtn.addEventListener('click', () => {
-        if (!deferredPrompt) {
-          showMessage('The app can only be installed when the browser allows it. Please try again later.');
-          return;
-        }
-
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('App Installed');
-          } else {
-            showMessage('App Installation Declined');
-          }
-          deferredPrompt = null;
-        }).catch((err) => {
-          showError(`Install Prompt Error: ${err}`);
-          console.error(`Install Prompt Error: ${err}`);
-        });
-      });
     });
 
     // If beforeinstallprompt is not triggered, show message to inform the user
