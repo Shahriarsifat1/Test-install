@@ -62,6 +62,7 @@
     const errorContainer = document.getElementById('error-container');
     const errorList = document.getElementById('error-list');
     const messageContainer = document.getElementById('message-container');
+    const installBtn = document.querySelector('.install-btn');
 
     function showError(message) {
       const listItem = document.createElement('li');
@@ -102,7 +103,6 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      const installBtn = document.querySelector('.install-btn');
       installBtn.style.display = 'block';
 
       installBtn.addEventListener('click', () => {
@@ -119,9 +119,17 @@
             showMessage('App Installation Declined');
           }
           deferredPrompt = null;
-        }).catch((err) => showError(`Install Prompt Error: ${err}`));
+        }).catch((err) => {
+          showError(`Install Prompt Error: ${err}`);
+          console.error(`Install Prompt Error: ${err}`);
+        });
       });
     });
+
+    // If beforeinstallprompt is not triggered, show message to inform the user
+    if (!window.BeforeInstallPromptEvent) {
+      showMessage('This browser does not support PWA installation.');
+    }
   </script>
 </body>
 </html>
